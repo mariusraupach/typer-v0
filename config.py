@@ -38,8 +38,10 @@ def get_context(context: typer.Context):
     table = Table("CURRENT", "LABEL", "USERNAME")
 
     for label, usernames in data.items():
-        for username in usernames.keys():
-            table.add_row("", label, username)
+        for username, data in usernames.items():
+            current = "*" if data.get("current") == "*" else ""
+
+            table.add_row(current, label, username)
 
     console.print(table)
 
@@ -56,11 +58,18 @@ def set_context(
     except FileNotFoundError:
         data = {}
 
+    is_first = len(data) == 0
+
     data.setdefault(label, {})
 
-    data[label][username] = {
-        "password": base64.b64encode(password.encode("utf-8")).decode("utf-8")
-    }
+    data[label].setdefault(username, {})
+
+    if is_first:
+        data[label][username].setdefault("current", "*")
+
+    data[label][username]["password"] = base64.b64encode(
+        password.encode("utf-8")
+    ).decode("utf-8")
 
     with open(".yaml", "w") as stream:
         yaml.safe_dump(data, stream)
