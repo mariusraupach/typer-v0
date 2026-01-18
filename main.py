@@ -7,10 +7,14 @@ app = typer.Typer()
 
 app.add_typer(config_app, name="config")
 
+
 @app.callback()
 def main(context: typer.Context):
-    with open(".yaml", "r") as stream:
-        context.obj = yaml.safe_load(stream)
+    try:
+        with open(".yaml", "r") as stream:
+            context.obj = yaml.safe_load(stream)
+    except FileNotFoundError:
+        context.obj = {}
 
 
 if __name__ == "__main__":
